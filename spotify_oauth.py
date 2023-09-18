@@ -69,7 +69,7 @@ print("Code Verifier: " + code_verifier)
 
 os.environ['CODE_VERIFIER'] = code_verifier
 
-print(os.environ["CODE_VERIFIER"])
+# print(os.environ)
 
 auth_headers = {
     "response_type": "code",
@@ -81,4 +81,10 @@ auth_headers = {
     "code_challenge": challenge,
 }
 
-# webbrowser.open("https://accounts.spotify.com/authorize?" + urlencode(auth_headers))
+# r = requests.get("https://accounts.spotify.com/authorize?" +
+#                  urlencode(auth_headers))
+
+# print(r)
+
+webbrowser.open("https://accounts.spotify.com/authorize?" +
+                urlencode(auth_headers))
