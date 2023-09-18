@@ -6,7 +6,7 @@ import requests
 from urllib.parse import urlencode
 import webbrowser
 import random as rand
-
+import http_server
 from dotenv import load_dotenv
 
 
@@ -88,3 +88,9 @@ auth_headers = {
 
 webbrowser.open("https://accounts.spotify.com/authorize?" +
                 urlencode(auth_headers))
+
+http_server.get_codestate()
+
+print("PRINTING ENVS AFTER DATA RECV\n\n")
+print("\t" + os.environ['SPOTIFY_CODE'])
+print("\t" + os.environ['SPOTIFY_STATE'])
