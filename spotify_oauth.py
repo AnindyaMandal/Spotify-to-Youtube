@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 import webbrowser
 import random as rand
 import http_server
+import re
 from dotenv import load_dotenv
 
 
@@ -69,7 +70,6 @@ print("Code Verifier: " + code_verifier)
 
 os.environ['CODE_VERIFIER'] = code_verifier
 
-# print(os.environ)
 
 auth_headers = {
     "response_type": "code",
@@ -94,3 +94,39 @@ http_server.get_codestate()
 print("PRINTING ENVS AFTER DATA RECV\n\n")
 print("\t" + os.environ['SPOTIFY_CODE'])
 print("\t" + os.environ['SPOTIFY_STATE'])
+
+access_headers = {
+    'Content-Type': 'application/x-www-form-urlencoded'
+}
+print(os.environ['SPOTIFY_CODE'])
+
+access_payload = {
+    'grant_type': 'authorization_code',
+    'code': os.environ['SPOTIFY_CODE'],
+    'redirect_uri': spotify_redirect_uri,
+    'client_id': spotify_client_id,
+    'code_verifier': os.environ['CODE_VERIFIER']
+}
+
+access_uri = 'https://accounts.spotify.com/api/token'
+
+response = requests.post(
+    access_uri, data=access_payload, headers=access_headers)
+
+print(response.status_code)
+print(response.reason)
+
+response_utf8 = response.content.decode("utf-8")
+print(response_utf8)
+
+access_token = re.search(r'(?<={"access_token":").*?(?=","token_type":)',
+                         response_utf8).group()
+print("\n" + access_token)
+
+profile_uri = 'https://api.spotify.com/v1/me'
+
+response = requests.get(profile_uri, headers={
+    'Authorization': 'Bearer ' + access_token
+})
+
+print(response.content.decode("utf-8"))
