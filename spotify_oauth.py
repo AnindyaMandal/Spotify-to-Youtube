@@ -27,7 +27,7 @@ def generate_random_string(length):
 # Stolen from https://www.stefaanlippens.net/oauth-code-flow-pkce.html
 
 
-def generate_code_challenge():
+def generate_code_challenge(code_verifier):
     code_challenge = hashlib.sha256(code_verifier.encode('utf-8')).digest()
     code_challenge = base64.urlsafe_b64encode(code_challenge).decode('utf-8')
     code_challenge = code_challenge.replace('=', '')
@@ -53,80 +53,88 @@ def generate_code_challenge():
 # }
 """
 
-load_dotenv()
 
-spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
-spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
-spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
-scope = "playlist-modify-private"
-code_verifier = generate_random_string(128)
+def auth():
+    load_dotenv()
 
+    spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
+    spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+    spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
+    scope = "playlist-modify-private"
+    code_verifier = generate_random_string(128)
 
-challenge = generate_code_challenge()
-state = generate_random_string(16)
+    challenge = generate_code_challenge(code_verifier)
+    state = generate_random_string(16)
 
-print("Challenge: " + challenge, len(challenge))
-print("Code Verifier: " + code_verifier)
+    # print("Challenge: " + challenge, len(challenge))
+    # print("Code Verifier: " + code_verifier)
 
-os.environ['CODE_VERIFIER'] = code_verifier
+    os.environ['CODE_VERIFIER'] = code_verifier
 
+    auth_headers = {
+        "response_type": "code",
+        "client_id": spotify_client_id,
+        "scope": scope,
+        "redirect_uri": spotify_redirect_uri,
+        "state": state,
+        "code_challenge_method": "S256",
+        "code_challenge": challenge,
+    }
 
-auth_headers = {
-    "response_type": "code",
-    "client_id": spotify_client_id,
-    "scope": scope,
-    "redirect_uri": spotify_redirect_uri,
-    "state": state,
-    "code_challenge_method": "S256",
-    "code_challenge": challenge,
-}
+    # r = requests.get("https://accounts.spotify.com/authorize?" +
+    #                  urlencode(auth_headers))
 
-# r = requests.get("https://accounts.spotify.com/authorize?" +
-#                  urlencode(auth_headers))
+    # print(r)
 
-# print(r)
+    webbrowser.open("https://accounts.spotify.com/authorize?" +
+                    urlencode(auth_headers))
 
-webbrowser.open("https://accounts.spotify.com/authorize?" +
-                urlencode(auth_headers))
+    http_server.get_codestate()
 
-http_server.get_codestate()
+    # print("PRINTING ENVS AFTER DATA RECV\n\n")
+    # print("\t" + os.environ['SPOTIFY_CODE'])
+    # print("\t" + os.environ['SPOTIFY_STATE'])
 
-print("PRINTING ENVS AFTER DATA RECV\n\n")
-print("\t" + os.environ['SPOTIFY_CODE'])
-print("\t" + os.environ['SPOTIFY_STATE'])
+    access_headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    # print(os.environ['SPOTIFY_CODE'])
 
-access_headers = {
-    'Content-Type': 'application/x-www-form-urlencoded'
-}
-print(os.environ['SPOTIFY_CODE'])
+    access_payload = {
+        'grant_type': 'authorization_code',
+        'code': os.environ['SPOTIFY_CODE'],
+        'redirect_uri': spotify_redirect_uri,
+        'client_id': spotify_client_id,
+        'code_verifier': os.environ['CODE_VERIFIER']
+    }
 
-access_payload = {
-    'grant_type': 'authorization_code',
-    'code': os.environ['SPOTIFY_CODE'],
-    'redirect_uri': spotify_redirect_uri,
-    'client_id': spotify_client_id,
-    'code_verifier': os.environ['CODE_VERIFIER']
-}
+    access_uri = 'https://accounts.spotify.com/api/token'
 
-access_uri = 'https://accounts.spotify.com/api/token'
+    response = requests.post(
+        access_uri, data=access_payload, headers=access_headers)
 
-response = requests.post(
-    access_uri, data=access_payload, headers=access_headers)
+    print(response.status_code)
+    print(response.reason)
 
-print(response.status_code)
-print(response.reason)
+    response_utf8 = response.content.decode("utf-8")
+    # print(response_utf8)
 
-response_utf8 = response.content.decode("utf-8")
-print(response_utf8)
+    access_token = re.search(r'(?<={"access_token":").*?(?=","token_type":)',
+                                response_utf8).group()
+    print("\n" + access_token)
 
-access_token = re.search(r'(?<={"access_token":").*?(?=","token_type":)',
-                         response_utf8).group()
-print("\n" + access_token)
+    os.environ['SPOTIFY_ACCESS_TOKEN'] = access_token
 
-profile_uri = 'https://api.spotify.com/v1/me'
+    base_uri = 'https://api.spotify.com/v1'
+    profile_uri = 'https://api.spotify.com/v1/me'
 
-response = requests.get(profile_uri, headers={
-    'Authorization': 'Bearer ' + access_token
-})
+    response = requests.get(profile_uri, headers={
+        'Authorization': 'Bearer ' + access_token
+    })
 
-print(response.content.decode("utf-8"))
+    user_id = re.search(r'(?<="id" : ").*?(?=",)', response.content.decode("utf-8")).group()
+    print("USER ID: " + user_id)
+
+    os.environ['SPOTIFY_USER_ID'] = user_id
+
+    print(response.content.decode("utf-8"))
