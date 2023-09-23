@@ -1,4 +1,4 @@
-import os, requests, spotify_oauth, json
+import os, requests, spotify_oauth
 
 
 
@@ -50,7 +50,7 @@ def get_all_playlists():
 
     selected_plist_id = data["items"][user_select]["id"]
 
-    response = requests.get(base_uri + "/playlists/" + selected_plist_id + "/tracks?offset=10&limit=50", headers={
+    response = requests.get(base_uri + "/playlists/" + selected_plist_id + "/tracks?limit=50", headers={
         'Authorization': 'Bearer ' + access_token
     })
 
@@ -66,19 +66,27 @@ def get_all_playlists():
         print("Uri:\t" + track["track"]["uri"])
 
 
-
-
-
-
-
+# https://developer.spotify.com/documentation/web-api/reference/get-users-saved-tracks
+def get_liked_songs():
+    access_token = os.environ['SPOTIFY_ACCESS_TOKEN']
+    response = requests.get(profile_uri + "/tracks?limit=50", headers={
+        'Authorization': 'Bearer ' + access_token
+    })
     
+    liked_songs = response.json()
+    for track in liked_songs["items"]:
+        print("Track name:\t" + track["track"]["name"])
+
+        print("Artists:\t" + str(track["track"]["artists"][0]["name"]))
+        print("Album:\t" + str(track["track"]["album"]["name"]))
+        print("Uri:\t" + track["track"]["uri"])
 
 
 
 
 
-
-get_all_playlists()
+get_liked_songs()
+# get_all_playlists()
 
 
 

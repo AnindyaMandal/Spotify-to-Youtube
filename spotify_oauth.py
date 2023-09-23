@@ -60,7 +60,7 @@ def auth():
     spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
     spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
     spotify_redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
-    scope = "playlist-modify-private"
+    scope = "playlist-modify-private user-library-read"
     code_verifier = generate_random_string(128)
 
     challenge = generate_code_challenge(code_verifier)

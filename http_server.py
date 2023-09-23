@@ -40,7 +40,7 @@ def get_codestate():
             client_connection.sendall(response.encode())
             client_connection.close()
 
-            if (len(code) == 264 and len(state) == 16):
+            if (len(code) == 290 and len(state) == 16):
                 os.environ['SPOTIFY_CODE'] = code
                 os.environ['SPOTIFY_STATE'] = state
                 server_socket.close()
