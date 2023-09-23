@@ -20,8 +20,39 @@ def get_all_playlists():
     # print(response.content.decode("utf-8"))
 
     data = response.json()
-    print("Length of data: num of playlists i think  " + str(len(data["items"])))
-    print(data["items"][0]["name"])
+    num_of_plist = len(data["items"])
+    print("Length of data:  " + str(num_of_plist))
+    # print(data["items"][0]["name"])
+
+    count = 0
+    for plist in data["items"]:
+        print(str(count) + ". Name: " + plist["name"] + "\tTrack endpoint: " + plist["tracks"]["href"])
+        count += 1
+
+    correct_input = False
+    user_select = -1
+    while(not correct_input):
+        
+        try:
+            user_select = int(input("Which playlist number would you like more information on? "))
+            if user_select < 0 or user_select >= num_of_plist:
+                raise ValueError
+            
+            break
+
+        except ValueError:
+            print("Please enter an integer between 0 and " + str(len(data["items"]) - 1))
+
+    
+    print("Selected playlist: " + data["items"][user_select]["name"] + "\tID: " + data["items"][user_select]["id"])
+
+
+
+
+
+
+    
+
 
 
 
