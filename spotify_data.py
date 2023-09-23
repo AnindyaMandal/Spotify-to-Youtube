@@ -46,6 +46,26 @@ def get_all_playlists():
     
     print("Selected playlist: " + data["items"][user_select]["name"] + "\tID: " + data["items"][user_select]["id"])
 
+    print("Getting track info for playlist ID: " + data["items"][user_select]["id"] + "\t Name: " + data["items"][user_select]["name"])
+
+    selected_plist_id = data["items"][user_select]["id"]
+
+    response = requests.get(base_uri + "/playlists/" + selected_plist_id + "/tracks?offset=10&limit=50", headers={
+        'Authorization': 'Bearer ' + access_token
+    })
+
+    track_data = response.json()
+    # print(str(track_data) + "\n")
+    print(response.status_code)
+    print(track_data)
+    for track in track_data["items"]:
+        print("Track name:\t" + track["track"]["name"])
+
+        print("Artists:\t" + str(track["track"]["artists"][0]["name"]))
+        print("Album:\t" + str(track["track"]["album"]["name"]))
+        print("Uri:\t" + track["track"]["uri"])
+
+
 
 
 
