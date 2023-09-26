@@ -138,3 +138,14 @@ def auth():
     os.environ['SPOTIFY_USER_ID'] = user_id
 
     print(response.content.decode("utf-8"))
+
+
+# https://developers.google.com/identity/protocols/oauth2/native-app#creatingcred
+def google_auth():
+    load_dotenv()
+    client_id = os.getenv['GOOGLE_WEB_CLIENT_ID']
+    auth_url = "https://accounts.google.com/o/oauth2/v2/auth"
+    code_verifier = generate_random_string(32)
+
+    challenge = generate_code_challenge(code_verifier)
+    state = generate_random_string(16)
