@@ -1,6 +1,4 @@
-import os, requests, spotify_oauth
-
-
+import os, requests, spotify_oauth, SongData, youtube_search, webbrowser
 
 
 
@@ -8,6 +6,7 @@ import os, requests, spotify_oauth
 spotify_oauth.auth()
 
 
+song_data_arr = []
 base_uri = "https://api.spotify.com/v1"
 profile_uri = 'https://api.spotify.com/v1/me'
 
@@ -69,7 +68,7 @@ def get_all_playlists():
 # https://developer.spotify.com/documentation/web-api/reference/get-users-saved-tracks
 def get_liked_songs(offset=0):
     access_token = os.environ['SPOTIFY_ACCESS_TOKEN']
-    response = requests.get(profile_uri + "/tracks?offset=" + str(offset) + "&limit=20", headers={
+    response = requests.get(profile_uri + "/tracks?offset=" + str(offset) + "&limit=50", headers={
         'Authorization': 'Bearer ' + access_token
     })
     
@@ -77,19 +76,34 @@ def get_liked_songs(offset=0):
     print("Liked songs length: " + str(len(liked_songs["items"])))
     if len(liked_songs["items"]) == 0: return 0
     for track in liked_songs["items"]:
-        print("Track name:\t" + track["track"]["name"])
+        # print("Track name:\t" + track["track"]["name"])
 
-        print("Artists:\t" + str(track["track"]["artists"][0]["name"]))
-        print("Album:\t" + str(track["track"]["album"]["name"]))
+        # print("Artists:\t" + str(track["track"]["artists"][0]["name"]))
+        # print("Album:\t" + str(track["track"]["album"]["name"]))
         # print("Uri:\t" + track["track"]["uri"])
 
-    get_liked_songs(offset+20)
+       
+        SongData.data_arr.append(SongData.SongData(str(track["track"]["name"]), track["track"]["artists"][0]["name"], str(track["track"]["album"]["name"])))
+    get_liked_songs(offset+50)
 
 
 
 
 
 get_liked_songs()
+
+print("\n\n\n\t\t PRINTING SONG DATA ARRAY\n\n\n")
+
+
+
+
+youtube_search.get_song_from_YT()
+
+# for song in SongData.data_arr:
+#     print("Name: " + str(song.name) + "\tArtists: " + str(song.artist_arr))
+#     print("Album: " + str(song.album_name))
+#     webbrowser.open(song.url)
+    
 # get_all_playlists()
 
 

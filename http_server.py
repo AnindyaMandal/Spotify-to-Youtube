@@ -36,7 +36,7 @@ def get_codestate():
             print(len(state))
 
             # Send HTTP response
-            response = 'HTTP/1.0 200 OK\n\nCode: ' + code + '\nState: ' + state
+            response = 'HTTP/1.0 200 OK\n\nCode: ' + code + '\nState: ' + state + "\n\n\n\tClose this window and return to application :D"
             client_connection.sendall(response.encode())
             client_connection.close()
 
