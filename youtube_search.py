@@ -14,8 +14,10 @@ def get_song_from_YT():
         print("\n\tYouTube Query for: " + song.name + "\t" + str(song.artists))
         artists = str(song.artists)
         yt_query = urllib.parse.urlencode({'search_query' : song.name , ' by ' : artists})
-        print(yt_query)
+        print("\tQuery: " + yt_query)
+        print("\n\thttps://www.youtube.com/results?" + str(yt_query))
 
+        song.query = str("https://www.youtube.com/results?" + yt_query)
         res = urllib.request.urlopen("https://www.youtube.com/results?" + yt_query)
     
         video_ids = re.findall(r"watch\?v=(\S{11})", res.read().decode())
@@ -23,7 +25,7 @@ def get_song_from_YT():
         print("https://www.youtube.com/watch?v=" + video_ids[0])
         song.url = str("https://www.youtube.com/watch?v=" + video_ids[0])
 
-        webbrowser.open(song.url)
+        # webbrowser.open(song.url)
 
 
 

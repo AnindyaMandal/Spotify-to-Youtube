@@ -1,4 +1,5 @@
 import os, requests, spotify_oauth, SongData, youtube_search, webbrowser
+import db
 
 
 
@@ -27,6 +28,8 @@ def get_all_playlists():
     for plist in data["items"]:
         print(str(count) + ". Name: " + plist["name"] + "\tTrack endpoint: " + plist["tracks"]["href"])
         count += 1
+    
+    print(str(count) + ". Name: Liked Songs")
 
     correct_input = False
     user_select = -1
@@ -34,6 +37,10 @@ def get_all_playlists():
         
         try:
             user_select = int(input("Which playlist number would you like more information on? "))
+            if user_select == num_of_plist:
+                print("\n\tGetting user's liked songs.")
+                get_liked_songs()
+                return 0
             if user_select < 0 or user_select >= num_of_plist:
                 raise ValueError
             
@@ -47,22 +54,44 @@ def get_all_playlists():
 
     print("Getting track info for playlist ID: " + data["items"][user_select]["id"] + "\t Name: " + data["items"][user_select]["name"])
 
-    selected_plist_id = data["items"][user_select]["id"]
+    # selected_plist_id = data["items"][user_select]["id"]
 
-    response = requests.get(base_uri + "/playlists/" + selected_plist_id + "/tracks?limit=50", headers={
+    # response = requests.get(base_uri + "/playlists/" + selected_plist_id + "/tracks?limit=50", headers={
+    #     'Authorization': 'Bearer ' + access_token
+    # })
+
+    # track_data = response.json()
+    # # print(str(track_data) + "\n")
+    # print(response.status_code)
+    # print(track_data)
+    # for track in track_data["items"]:
+    #     print("Track name:\t" + track["track"]["name"])
+
+    #     print("Artists:\t" + str(track["track"]["artists"][0]["name"]))
+    #     print("Album:\t" + str(track["track"]["album"]["name"]))
+    #     print("Uri:\t" + track["track"]["uri"])
+
+    get_playlist_songs(data["items"][user_select]["id"])
+
+def get_playlist_songs(plist_id, offset=0):
+    access_token = os.environ['SPOTIFY_ACCESS_TOKEN']
+    response = requests.get(base_uri + "/playlists/" + plist_id + "/tracks?offset=" + str(offset) + "&limit=50", headers={
         'Authorization': 'Bearer ' + access_token
     })
 
-    track_data = response.json()
-    # print(str(track_data) + "\n")
-    print(response.status_code)
-    print(track_data)
-    for track in track_data["items"]:
+    playlist_songs = response.json()
+    print("Playlist songs length: " + str(len(playlist_songs["items"])))
+    if len(playlist_songs["items"]) == 0: return 0
+    for track in playlist_songs["items"]:
         print("Track name:\t" + track["track"]["name"])
 
         print("Artists:\t" + str(track["track"]["artists"][0]["name"]))
         print("Album:\t" + str(track["track"]["album"]["name"]))
         print("Uri:\t" + track["track"]["uri"])
+
+       
+        SongData.data_arr.append(SongData.SongData(str(track["track"]["name"]), track["track"]["artists"][0]["name"], str(track["track"]["album"]["name"])))
+    get_playlist_songs(plist_id, offset+50)
 
 
 # https://developer.spotify.com/documentation/web-api/reference/get-users-saved-tracks
@@ -90,7 +119,8 @@ def get_liked_songs(offset=0):
 
 
 
-get_liked_songs()
+# get_liked_songs()
+get_all_playlists()
 
 print("\n\n\n\t\t PRINTING SONG DATA ARRAY\n\n\n")
 
@@ -99,12 +129,13 @@ print("\n\n\n\t\t PRINTING SONG DATA ARRAY\n\n\n")
 
 youtube_search.get_song_from_YT()
 
+
+
 # for song in SongData.data_arr:
 #     print("Name: " + str(song.name) + "\tArtists: " + str(song.artist_arr))
 #     print("Album: " + str(song.album_name))
 #     webbrowser.open(song.url)
     
-# get_all_playlists()
 
 
 

@@ -3,6 +3,7 @@ class SongData():
         self.name = name
         self.artists = artists
         self.album = album
+        self.query = ""
         self.url = ""
 
 
